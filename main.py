@@ -17,11 +17,14 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         global items
         self.items = []
 
-
+        global n
+        self.n = True
         self.setupUi(self,self.scramble, self.ctime)
         self.pushButton_2.clicked.connect(self.setscramble)
         self.pushButton_3.clicked.connect(self.resettimes)
-        self.pushButton.pressed.connect(self.startstoptimer)
+        self.pushButton.pressed.connect(self.stoptimer)
+        self.pushButton.released.connect(self.starttimer)
+
 
 
     # Add new time to list
@@ -39,6 +42,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.label_2.setText("ao5: 0.0 ao12: 0.0")
         self.lcdNumber.setProperty("value", "0.0")
         self.setscramble()
+        self.n = True
+        self.stoptimer()
         self.items = []
 
 
@@ -68,7 +73,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         avg_fi = "0.0"
         if len(self.items) > 11:
             ntimes = []
-            for index in range (len(self.items)-12,len(self.items)-1,+1):
+            for index in range (len(self.items)-12,len(self.items),+1):
                 ntimes.append(self.items[index])
             highest = 0
             lowest = 9999999
@@ -89,7 +94,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             run = 1
         if len(self.items) > 4:
             ntimes = []
-            for index in range (len(self.items)-5,len(self.items)-1,+1):
+            for index in range (len(self.items)-5,len(self.items),+1):
                 ntimes.append(self.items[index])
             highest = 0
             lowest = 9999999
@@ -101,6 +106,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                     lowest = index
             ntimes.remove(str(lowest))
             ntimes.remove(str(highest))
+
             fnum = float(0)
             for index in ntimes:
                 fnum += float(index)
@@ -130,24 +136,33 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.ctime = float(round(self.ctime, 1))            
             self.lcdNumber.setProperty("value", self.ctime)
             time.sleep(0.02)
-
-    def startstoptimer(self):
-        rstr = 0
+    def starttimer(self):
+        rstr = False
+        rnow = 0
+        if self.n == True:
+            self.n = False
+            rnow = True
+        elif self.n == False:
+            self.n = True
         # Start button hit
-        if (self.timerrun == False):
+        if (self.timerrun == False) and (rnow == True):
             self.start = time.time()
             run = "Stop"
             self.timerrun = True
             self.timerloop()
+            self.pushButton.setText(run)
+
+    def stoptimer(self):
+        rstr = 0
         # Stop button hit
-        else:
+        if (self.timerrun == True):
             rstr = time.time() - self.start
             run = "Start"
             self.addtime(rstr)
             self.setscramble()
             self.avgtimes()
             self.timerrun = False
-        self.pushButton.setText(run)
+            self.pushButton.setText(run)
 
     def setupUi(self, MainWindow, scramble, ctime):
         MainWindow.setObjectName("MainWindow")
