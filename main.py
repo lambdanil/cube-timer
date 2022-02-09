@@ -16,6 +16,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.defitem = "ao5: 0.0 ; ao12: 0.0"
         global items
         self.items = []
+        global avgtime
+        self.avgtime = 0
 
         global n
         self.n = True
@@ -24,16 +26,21 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.pushButton_3.clicked.connect(self.resettimes)
         self.pushButton.pressed.connect(self.stoptimer)
         self.pushButton.released.connect(self.starttimer)
-
-
+        self.listWidget.itemClicked.connect(self.item_cl)
+        self.pushButton_4.clicked.connect(self.calc_avg)
 
     # Add new time to list
     def addtime(self,time):
-        time = float(round(time, 1))  
+        time = float(round(time, 1))
         self.items.append(str(time))
+        nitems = []
+        index = 0
+        for item in self.items:
+            index += 1
+            nitems.append(str(index) + str(". ") + str(item))
         self.listWidget.clear()
         self.item = QtWidgets.QListWidgetItem()
-        self.listWidget.addItems(list(self.items))
+        self.listWidget.addItems(list(nitems))
 
 
     # Reset times
@@ -65,6 +72,12 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                 self.cturn += "2"
             self.scramble.append(self.cturn)
         return (str(" ".join(self.scramble)))
+
+
+    # Calculate average from last x solves
+    def calc_avg(self):
+        self.avgtimes()
+        self.avgtime = int(self.spinBox.value())
 
     # Set average times
     def avgtimes(self):
@@ -114,15 +127,54 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             avg_fi = float(round(avg_fi,1))
             avg_fi = str(avg_fi)
             run = 1
+#        if len(self.items) > 4:
+#            print(self.avgtime)
+        if self.avgtime > 4:
+            average = self.average(self.avgtime)
+        else:
+            average = str(0.0)
         if run == 1:
-            self.label_2.setText(f"ao5: {avg_fi} ao12: {avg_tw}")
+            self.label_2.setText(f"ao5: {avg_fi} ao12: {avg_tw} average: {average}")
         else:
             self.label_2.setText("ao5: 0.0 ao12: 0.0")
+
+
+    # Get average
+    def average(self, num):
+        print("x")
+        ntimes = []
+        for index in range (len(self.items)-num,len(self.items),+1):
+            ntimes.append(self.items[index])
+        highest = 0
+        lowest = 9999999
+        for index in ntimes:
+            index = float(index)
+            if index > highest:
+                highest = index
+            if index < lowest:
+                lowest = index
+        print(ntimes)
+        ntimes.remove(str(lowest))
+        ntimes.remove(str(highest))
+        fnum = float(0)
+        for index in ntimes:
+            fnum += float(index)
+        avg_tw = fnum/num-2
+        avg_tw = float(round(avg_tw,1))
+        avg_tw = str(avg_tw)
+        ntimes = []
+        return(avg_tw)
 
     # Set new random scramble
     def setscramble(self):
         self.scramble = self.getscramble()
         self.label.setText(self.scramble)
+
+    # Item select
+    def item_cl(self, item):
+        citem = (item.text())
+        lcitem = citem.split(".")
+        cnum = lcitem[0]
 
     # Thread that loops timer
     def timerloop(self):
@@ -133,7 +185,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def settimer(self):
         while self.timerrun == True:
             self.ctime = time.time() - self.start
-            self.ctime = float(round(self.ctime, 1))            
+            self.ctime = float(round(self.ctime, 1))
             self.lcdNumber.setProperty("value", self.ctime)
             time.sleep(0.02)
     def starttimer(self):
@@ -198,14 +250,30 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.widget_5.setObjectName("widget_5")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.widget_5)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.label_2 = QtWidgets.QLabel(self.widget_5)
+        self.widget_6 = QtWidgets.QWidget(self.widget_5)
+        self.widget_6.setObjectName("widget_6")
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.widget_6)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.label_2 = QtWidgets.QLabel(self.widget_6)
         font = QtGui.QFont()
         font.setPointSize(14)
         self.label_2.setFont(font)
         self.label_2.setAutoFillBackground(False)
         self.label_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.label_2.setObjectName("label_2")
-        self.verticalLayout_3.addWidget(self.label_2)
+        self.horizontalLayout_4.addWidget(self.label_2)
+        self.spinBox = QtWidgets.QSpinBox(self.widget_6)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.spinBox.sizePolicy().hasHeightForWidth())
+        self.spinBox.setSizePolicy(sizePolicy)
+        self.spinBox.setObjectName("spinBox")
+        self.horizontalLayout_4.addWidget(self.spinBox)
+        self.pushButton_4 = QtWidgets.QPushButton(self.widget_6)
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.horizontalLayout_4.addWidget(self.pushButton_4)
+        self.verticalLayout_3.addWidget(self.widget_6)
         self.listWidget = QtWidgets.QListWidget(self.widget_5)
         font = QtGui.QFont()
         font.setPointSize(20)
@@ -228,8 +296,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         sizePolicy.setHeightForWidth(self.lcdNumber.sizePolicy().hasHeightForWidth())
         self.lcdNumber.setSizePolicy(sizePolicy)
         self.lcdNumber.setSmallDecimalPoint(False)
-        self.lcdNumber.setProperty("value", 15.54684)
         self.lcdNumber.setProperty("value", ctime)
+        self.lcdNumber.setProperty("intValue", 0)
         self.lcdNumber.setObjectName("lcdNumber")
         self.horizontalLayout_3.addWidget(self.lcdNumber)
         self.horizontalLayout_2.addWidget(self.widget_4)
@@ -248,7 +316,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.pushButton.setObjectName("pushButton")
         self.horizontalLayout.addWidget(self.pushButton)
         self.verticalLayout.addWidget(self.widget_3)
-        MainWindow.setCentralWidget(self.centralwidget) 
+        MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow, scramble)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -264,6 +332,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.pushButton_3.setText(_translate("MainWindow", "Reset"))
         self.pushButton_2.setText(_translate("MainWindow", "New scramble"))
         self.pushButton.setText(_translate("MainWindow", "Start"))
+        self.pushButton_4.setText(_translate("MainWindow", "Accept"))
 
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
