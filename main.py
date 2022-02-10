@@ -5,6 +5,7 @@ import random
 import time
 import threading
 
+
 class Ui_MainWindow(QtWidgets.QMainWindow):
     def main(self):
         self.ctime = float(0)
@@ -24,7 +25,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         global n
         self.n = True
-        self.setupUi(self,self.scramble, self.ctime)
+        self.setupUi(self, self.scramble, self.ctime)
         self.pushButton_2.clicked.connect(self.setscramble)
         self.pushButton_3.clicked.connect(self.resettimes)
         self.pushButton.pressed.connect(self.stoptimer)
@@ -36,15 +37,27 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.toolButton_2.clicked.connect(self.file_load)
         self.pushButton.setFocus()
 
+
+    # Draw list
+    def drawlist(self):
+        nitems = []
+        index = 0
+        for item in self.items:
+            index += 1
+            nitems.append(str(index) + str(". ") + str(item))
+        self.listWidget.clear()
+        self.item = QtWidgets.QListWidgetItem()
+        self.listWidget.addItems(list(nitems))
+
     # Save table
     def file_save(self):
         dir = expanduser("~")
-        fname = str(QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', dir,"Text files (*.txt)"))
+        fname = str(QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', dir, "Text files (*.txt)"))
         if fname != "":
             sfname = fname.split("', '")
             pstr = sfname[0]
             pstr = (pstr[2:])
-            cfile = open(pstr,'w')
+            cfile = open(pstr, 'w')
             cstr = str("")
             cloop = 0
             for solve in self.items:
@@ -58,12 +71,12 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     # Load table
     def file_load(self):
         dir = expanduser("~")
-        fname = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', dir,"Text files (*.txt)"))
+        fname = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', dir, "Text files (*.txt)"))
         if fname != "":
             sfname = fname.split("', '")
             pstr = sfname[0]
             pstr = (pstr[2:])
-            cfile = open(pstr,'r')
+            cfile = open(pstr, 'r')
             line = cfile.readline()
             self.items = []
             self.scrambles = []
@@ -72,33 +85,18 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                 citem = sline[0]
                 cscr = sline[1]
                 line = cfile.readline()
-                cscr = cscr.replace("\n","")
+                cscr = cscr.replace("\n", "")
                 self.items.append(citem)
                 self.scrambles.append(cscr)
-            nitems = []
-            index = 0
-            for item in self.items:
-                index += 1
-                nitems.append(str(index) + str(". ") + str(item))
-            self.listWidget.clear()
-            self.item = QtWidgets.QListWidgetItem()
-            self.listWidget.addItems(list(nitems))
+            self.drawlist()
             cfile.close()
         self.pushButton.setFocus()
 
     # Add new time to list
-    def addtime(self,time):
+    def addtime(self, time):
         time = float(round(time, 1))
         self.items.append(str(time))
-        nitems = []
-        index = 0
-        for item in self.items:
-            index += 1
-            nitems.append(str(index) + str(". ") + str(item))
-        self.listWidget.clear()
-        self.item = QtWidgets.QListWidgetItem()
-        self.listWidget.addItems(list(nitems))
-
+        self.drawlist()
 
     # Reset times
     def resettimes(self):
@@ -111,26 +109,24 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.items = []
         self.pushButton.setFocus()
 
-
     # Generate scramble
     def getscramble(self):
-        self.turns = ["R","L","U","D","F","B"]
+        self.turns = ["R", "L", "U", "D", "F", "B"]
         self.lturn = str("")
         self.cturn = str("")
         self.scramble = []
-        self.numturns = random.randint(14,18)
-        for turn in range (0, self.numturns, +1):
-            self.cturn = self.turns[random.randint(0,len(self.turns)-1)]
+        self.numturns = random.randint(14, 18)
+        for turn in range(0, self.numturns, +1):
+            self.cturn = self.turns[random.randint(0, len(self.turns) - 1)]
             while (self.lturn == self.cturn):
-                self.cturn = self.turns[random.randint(0,len(self.turns)-1)]
+                self.cturn = self.turns[random.randint(0, len(self.turns) - 1)]
             self.lturn = self.cturn
-            if random.randint(0,12) == 0:
+            if random.randint(0, 12) == 0:
                 self.cturn = self.cturn.casefold()
-            if random.randint(0,2) == 0:
+            if random.randint(0, 2) == 0:
                 self.cturn += "2"
             self.scramble.append(self.cturn)
         return (str(" ".join(self.scramble)))
-
 
     # Calculate average from last x solves
     def calc_avg(self):
@@ -144,50 +140,15 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         avg_tw = "0.0"
         avg_fi = "0.0"
         if len(self.items) > 11:
-            ntimes = []
-            for index in range (len(self.items)-12,len(self.items),+1):
-                ntimes.append(self.items[index])
-            highest = 0
-            lowest = 9999999
-            for index in ntimes:
-                index = float(index)
-                if index > highest:
-                    highest = index
-                if index < lowest:
-                    lowest = index
-            ntimes.remove(str(lowest))
-            ntimes.remove(str(highest))
-            fnum = float(0)
-            for index in ntimes:
-                fnum += float(index)
-            avg_tw = fnum/10
-            avg_tw = float(round(avg_tw,1))
+            avg_tw = self.average(12)
             avg_tw = str(avg_tw)
             run = 1
         if len(self.items) > 4:
-            ntimes = []
-            for index in range (len(self.items)-5,len(self.items),+1):
-                ntimes.append(self.items[index])
-            highest = 0
-            lowest = 9999999
-            for index in ntimes:
-                index = float(index)
-                if index > highest:
-                    highest = index
-                if index < lowest:
-                    lowest = index
-            ntimes.remove(str(lowest))
-            ntimes.remove(str(highest))
-
-            fnum = float(0)
-            for index in ntimes:
-                fnum += float(index)
-            avg_fi = fnum/3
-            avg_fi = float(round(avg_fi,1))
+            avg_fi = self.average(5)
             avg_fi = str(avg_fi)
             run = 1
-#        if len(self.items) > 4:
-        if self.avgtime > 4 and (len(self.items) > self.avgtime-1):
+        #        if len(self.items) > 4:
+        if self.avgtime > 4 and (len(self.items) > self.avgtime - 1):
             average = self.average(self.avgtime)
         else:
             average = str(0.0)
@@ -196,11 +157,10 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         else:
             self.label_2.setText("ao5: 0.0 ao12: 0.0")
 
-
     # Get average
     def average(self, num):
         ntimes = []
-        for index in range (len(self.items)-num,len(self.items),+1):
+        for index in range(len(self.items) - num, len(self.items), +1):
             ntimes.append(self.items[index])
         highest = 0
         lowest = 9999999
@@ -215,11 +175,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         fnum = float(0)
         for index in ntimes:
             fnum += float(index)
-        avg_tw = fnum/(num-2)
-        avg_tw = float(round(avg_tw,1))
+        avg_tw = fnum / (num - 2)
+        avg_tw = float(round(avg_tw, 1))
         avg_tw = str(avg_tw)
         ntimes = []
-        return(avg_tw)
+        return (avg_tw)
 
     # Set new random scramble
     def setscramble(self):
@@ -232,7 +192,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         citem = (item.text())
         if len(self.items) > 0:
             lcitem = citem.split(".")
-            cnum = int(lcitem[0])-1
+            cnum = int(lcitem[0]) - 1
             self.label.setText(self.scrambles[cnum])
         self.pushButton.setFocus()
 
@@ -242,15 +202,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             cint = int(self.listWidget.currentRow())
             self.items.remove(self.items[cint])
             self.scrambles.remove(self.scrambles[cint])
-            nitems = []
-            index = 0
-            if len(self.items) > 0:
-                for item in self.items:
-                    index += 1
-                    nitems.append(str(index) + str(". ") + str(item))
-            self.listWidget.clear()
-            self.item = QtWidgets.QListWidgetItem()
-            self.listWidget.addItems(list(nitems))
+            self.drawlist()
         self.pushButton.setFocus()
 
     # Thread that loops timer
@@ -265,6 +217,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.ctime = float(round(self.ctime, 1))
             self.lcdNumber.setProperty("value", self.ctime)
             time.sleep(0.02)
+
     def starttimer(self):
         rstr = False
         rnow = 0
@@ -315,7 +268,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.toolButton_2.setObjectName("toolButton_2")
         self.verticalLayout_2.addWidget(self.toolButton_2)
         self.label = QtWidgets.QLabel(self.widget_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+                                           QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
@@ -323,7 +277,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         font = QtGui.QFont()
         font.setPointSize(60)
         self.label.setFont(font)
-        self.label.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
+        self.label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
         self.label.setWordWrap(True)
         self.label.setObjectName("label")
         self.verticalLayout_2.addWidget(self.label)
@@ -426,11 +380,13 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         super(Ui_MainWindow, self).__init__()
         self.main()
 
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
     form = Ui_MainWindow()
     form.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()
