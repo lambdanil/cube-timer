@@ -31,6 +31,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.listWidget.itemClicked.connect(self.item_cl)
         self.pushButton_4.clicked.connect(self.rm_time)
         self.spinBox.valueChanged.connect(self.calc_avg)
+        self.pushButton.setFocus()
 
 
     # Add new time to list
@@ -56,6 +57,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.n = True
         self.stoptimer()
         self.items = []
+        self.pushButton.setFocus()
 
 
     # Generate scramble
@@ -82,6 +84,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def calc_avg(self):
         self.avgtime = int(self.spinBox.value())
         self.avgtimes()
+        self.pushButton.setFocus()
 
     # Set average times
     def avgtimes(self):
@@ -170,6 +173,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def setscramble(self):
         self.scramble = self.getscramble()
         self.label.setText(self.scramble)
+        self.pushButton.setFocus()
 
     # Item select
     def item_cl(self, item):
@@ -178,6 +182,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             lcitem = citem.split(".")
             cnum = int(lcitem[0])-1
             self.label.setText(self.scrambles[cnum])
+        self.pushButton.setFocus()
 
     # Remove time
     def rm_time(self):
@@ -194,6 +199,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.listWidget.clear()
             self.item = QtWidgets.QListWidgetItem()
             self.listWidget.addItems(list(nitems))
+        self.pushButton.setFocus()
 
     # Thread that loops timer
     def timerloop(self):
@@ -223,6 +229,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.timerloop()
             self.scrambles.append(self.label.text())
             self.pushButton.setText(run)
+        self.pushButton.setFocus()
 
     def stoptimer(self):
         rstr = 0
@@ -235,6 +242,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.avgtimes()
             self.timerrun = False
             self.pushButton.setText(run)
+        self.pushButton.setFocus()
 
     def setupUi(self, MainWindow, scramble, ctime):
         MainWindow.setObjectName("MainWindow")
