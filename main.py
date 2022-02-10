@@ -18,6 +18,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.items = []
         global avgtime
         self.avgtime = 0
+        global scrambles
+        self.scrambles = []
 
         global n
         self.n = True
@@ -27,7 +29,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.pushButton.pressed.connect(self.stoptimer)
         self.pushButton.released.connect(self.starttimer)
         self.listWidget.itemClicked.connect(self.item_cl)
-        self.pushButton_4.clicked.connect(self.calc_avg)
+        self.pushButton_4.clicked.connect(self.rm_time)
+        self.spinBox.valueChanged.connect(self.calc_avg)
+
 
     # Add new time to list
     def addtime(self,time):
@@ -76,8 +80,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
     # Calculate average from last x solves
     def calc_avg(self):
-        self.avgtimes()
         self.avgtime = int(self.spinBox.value())
+        self.avgtimes()
 
     # Set average times
     def avgtimes(self):
@@ -128,20 +132,18 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             avg_fi = str(avg_fi)
             run = 1
 #        if len(self.items) > 4:
-#            print(self.avgtime)
-        if self.avgtime > 4:
+        if self.avgtime > 4 and (len(self.items) > self.avgtime-1):
             average = self.average(self.avgtime)
         else:
             average = str(0.0)
         if run == 1:
-            self.label_2.setText(f"ao5: {avg_fi} ao12: {avg_tw} average: {average}")
+            self.label_2.setText(f"ao5: {avg_fi} ao12: {avg_tw} avg: {average}")
         else:
             self.label_2.setText("ao5: 0.0 ao12: 0.0")
 
 
     # Get average
     def average(self, num):
-        print("x")
         ntimes = []
         for index in range (len(self.items)-num,len(self.items),+1):
             ntimes.append(self.items[index])
@@ -153,13 +155,12 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                 highest = index
             if index < lowest:
                 lowest = index
-        print(ntimes)
         ntimes.remove(str(lowest))
         ntimes.remove(str(highest))
         fnum = float(0)
         for index in ntimes:
             fnum += float(index)
-        avg_tw = fnum/num-2
+        avg_tw = fnum/(num-2)
         avg_tw = float(round(avg_tw,1))
         avg_tw = str(avg_tw)
         ntimes = []
@@ -173,8 +174,26 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     # Item select
     def item_cl(self, item):
         citem = (item.text())
-        lcitem = citem.split(".")
-        cnum = lcitem[0]
+        if len(self.items) > 0:
+            lcitem = citem.split(".")
+            cnum = int(lcitem[0])-1
+            self.label.setText(self.scrambles[cnum])
+
+    # Remove time
+    def rm_time(self):
+        if len(self.items) > 0:
+            cint = int(self.listWidget.currentRow())
+            self.items.remove(self.items[cint])
+            self.scrambles.remove(self.scrambles[cint])
+            nitems = []
+            index = 0
+            if len(self.items) > 0:
+                for item in self.items:
+                    index += 1
+                    nitems.append(str(index) + str(". ") + str(item))
+            self.listWidget.clear()
+            self.item = QtWidgets.QListWidgetItem()
+            self.listWidget.addItems(list(nitems))
 
     # Thread that loops timer
     def timerloop(self):
@@ -202,6 +221,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             run = "Stop"
             self.timerrun = True
             self.timerloop()
+            self.scrambles.append(self.label.text())
             self.pushButton.setText(run)
 
     def stoptimer(self):
@@ -332,7 +352,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.pushButton_3.setText(_translate("MainWindow", "Reset"))
         self.pushButton_2.setText(_translate("MainWindow", "New scramble"))
         self.pushButton.setText(_translate("MainWindow", "Start"))
-        self.pushButton_4.setText(_translate("MainWindow", "Accept"))
+        self.pushButton_4.setText(_translate("MainWindow", "Delete"))
 
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
