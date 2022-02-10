@@ -1,8 +1,12 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from os.path import expanduser
 import sys
 import random
 import time
 import threading
+
+from PyQt5.QtCore import QDir
+
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
     def main(self):
@@ -31,8 +35,59 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.listWidget.itemClicked.connect(self.item_cl)
         self.pushButton_4.clicked.connect(self.rm_time)
         self.spinBox.valueChanged.connect(self.calc_avg)
+        self.toolButton.clicked.connect(self.file_save)
+        self.toolButton_2.clicked.connect(self.file_load)
         self.pushButton.setFocus()
 
+    # Save table
+    def file_save(self):
+        dir = expanduser("~")
+        fname = str(QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', dir,"Text files (*.txt)"))
+        if fname != "":
+            sfname = fname.split("', '")
+            pstr = sfname[0]
+            pstr = (pstr[2:])
+            cfile = open(pstr,'w')
+            cstr = str("")
+            cloop = 0
+            for solve in self.items:
+                scramble = self.scrambles[cloop]
+                cstr += (f"{solve} - {scramble}\n")
+                cloop += 1
+            cfile.write(cstr)
+            cfile.close()
+        self.pushButton.setFocus()
+
+    # Load table
+    def file_load(self):
+        dir = expanduser("~")
+        fname = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', dir,"Text files (*.txt)"))
+        if fname != "":
+            sfname = fname.split("', '")
+            pstr = sfname[0]
+            pstr = (pstr[2:])
+            cfile = open(pstr,'r')
+            line = cfile.readline()
+            self.items = []
+            self.scrambles = []
+            while line:
+                sline = line.split(" - ")
+                citem = sline[0]
+                cscr = sline[1]
+                line = cfile.readline()
+                cscr = cscr.replace("\n","")
+                self.items.append(citem)
+                self.scrambles.append(cscr)
+            nitems = []
+            index = 0
+            for item in self.items:
+                index += 1
+                nitems.append(str(index) + str(". ") + str(item))
+            self.listWidget.clear()
+            self.item = QtWidgets.QListWidgetItem()
+            self.listWidget.addItems(list(nitems))
+            cfile.close()
+        self.pushButton.setFocus()
 
     # Add new time to list
     def addtime(self,time):
@@ -256,6 +311,12 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.widget_2.setObjectName("widget_2")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.widget_2)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.toolButton = QtWidgets.QToolButton(self.widget_2)
+        self.toolButton.setObjectName("toolButton")
+        self.verticalLayout_2.addWidget(self.toolButton)
+        self.toolButton_2 = QtWidgets.QToolButton(self.widget_2)
+        self.toolButton_2.setObjectName("toolButton_2")
+        self.verticalLayout_2.addWidget(self.toolButton_2)
         self.label = QtWidgets.QLabel(self.widget_2)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
@@ -361,6 +422,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.pushButton_2.setText(_translate("MainWindow", "New scramble"))
         self.pushButton.setText(_translate("MainWindow", "Start"))
         self.pushButton_4.setText(_translate("MainWindow", "Delete"))
+        self.toolButton.setText(_translate("MainWindow", "Save time table"))
+        self.toolButton_2.setText(_translate("MainWindow", "Load time table"))
 
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
