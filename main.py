@@ -5,9 +5,6 @@ import random
 import time
 import threading
 
-from PyQt5.QtCore import QDir
-
-
 class Ui_MainWindow(QtWidgets.QMainWindow):
     def main(self):
         self.ctime = float(0)
