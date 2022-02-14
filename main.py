@@ -76,6 +76,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             sfname = fname.split("', '")
             pstr = sfname[0]
             pstr = (pstr[2:])
+            if ".txt" not in pstr:
+                pstr += ".txt"
             cfile = open(pstr, 'r')
             line = cfile.readline()
             self.items = []
@@ -123,7 +125,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.lturn = self.cturn
             if random.randint(0, 12) == 0:
                 self.cturn = self.cturn.casefold()
-            if random.randint(0, 2) == 0:
+            if random.randint(0, 1) == 0:
+                self.cturn += "'"
+            elif random.randint(0, 2) == 0:
                 self.cturn += "2"
             self.scramble.append(self.cturn)
         return (str(" ".join(self.scramble)))
