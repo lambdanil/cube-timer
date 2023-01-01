@@ -3,6 +3,7 @@ from os.path import expanduser
 import sys
 import random
 import time
+import os
 import threading
 
 
@@ -57,6 +58,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             sfname = fname.split("', '")
             pstr = sfname[0]
             pstr = (pstr[2:])
+            if os.name != "nt":
+                pstr += ".txt"
             cfile = open(pstr, 'w')
             cstr = str("")
             cloop = 0
@@ -72,7 +75,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def file_load(self):
         dir = expanduser("~")
         fname = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', dir, "Text files (*.txt)"))
-        if fname != "":
+        if fname[2] != "'":
             sfname = fname.split("', '")
             pstr = sfname[0]
             pstr = (pstr[2:])
